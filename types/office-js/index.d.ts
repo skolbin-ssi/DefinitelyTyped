@@ -7613,17 +7613,14 @@ declare namespace Office {
              * The content of the attachment is returned as a base64-encoded string.
              */
             Base64 = "base64",
-
             /**
              * The content of the attachment is returned as a string representing a URL.
              */
             Url = "url",
-
             /**
              * The content of the attachment is returned as a string representing an .eml formatted file.
              */
             Eml = "eml",
-
             /**
              * The content of the attachment is returned as a string representing an .icalendar formatted file.
              */
@@ -7643,7 +7640,6 @@ declare namespace Office {
              * An attachment was added to the item.
              */
             Added = "added",
-
             /**
              * An attachment was removed from the item.
              */
@@ -12562,7 +12558,7 @@ declare namespace Office {
          */
         displayNewMessageForm(parameters: any): void;
         /**
-         * Gets a string that contains a token used to call REST APIs or Exchange Web Services.
+         * Gets a string that contains a token used to call REST APIs or Exchange Web Services (EWS).
          *
          * The `getCallbackTokenAsync` method makes an asynchronous call to get an opaque token from the Exchange Server that hosts the user's mailbox. 
          * The lifetime of the callback token is 5 minutes.
@@ -12574,9 +12570,12 @@ declare namespace Office {
          * Calling the `getCallbackTokenAsync` method in compose mode requires you to have saved the item.
          * The `saveAsync` method requires a minimum permission level of `ReadWriteItem`.
          *
+         * **Important**: For guidance on delegate or shared scenarios, see the
+         * {@link https://docs.microsoft.com/office/dev/add-ins/outlook/delegate-access | delegate access} article.
+         *
          * *REST Tokens*
          *
-         * When a REST token is requested (`options.isRest` = `true`), the resulting token will not work to authenticate Exchange Web Services calls.
+         * When a REST token is requested (`options.isRest` = `true`), the resulting token will not work to authenticate EWS calls.
          * The token will be limited in scope to read-only access to the current item and its attachments, unless the add-in has specified the
          * `ReadWriteMailbox` permission in its manifest.
          * If the `ReadWriteMailbox` permission is specified, the resulting token will grant read/write access to mail, calendar, and contacts,
@@ -12653,6 +12652,9 @@ declare namespace Office {
          *
          * Calling the `getCallbackTokenAsync` method in compose mode requires you to have saved the item.
          * The `saveAsync` method requires a minimum permission level of `ReadWriteItem`.
+         *
+         * **Important**: For guidance on delegate or shared scenarios, see the
+         * {@link https://docs.microsoft.com/office/dev/add-ins/outlook/delegate-access | delegate access} article.
          *
          * [Api set: All support Read mode; Mailbox 1.3 introduced Compose mode support]
          *
@@ -14806,9 +14808,12 @@ declare namespace Office {
          */
         key?: string;
         /**
-         * Specifies the `ItemNotificationMessageType` of message. If type is `ProgressIndicator` or `ErrorMessage`, an icon is automatically supplied
+         * Specifies the `ItemNotificationMessageType` of message.
+         *
+         * If type is `ProgressIndicator` or `ErrorMessage`, an icon is automatically supplied
          * and the message is not persistent. Therefore the icon and persistent properties are not valid for these types of messages.
          * Including them will result in an `ArgumentException`.
+         *
          * If type is `ProgressIndicator`, the developer should remove or replace the progress indicator when the action is complete.
          */
         type: MailboxEnums.ItemNotificationMessageType | string;
@@ -14825,7 +14830,8 @@ declare namespace Office {
          */
         message: string;
         /**
-         * Only applicable when type is `InformationalMessage`. If true, the message remains until removed by this add-in or dismissed by the user.
+         * Specifies if the message should be persistent. Only applicable when type is `InformationalMessage`.
+         * If true, the message remains until removed by this add-in or dismissed by the user.
          * If false, it is removed when the user navigates to a different item.
          * For error notifications, the message persists until the user sees it once.
          * Specifying this parameter for an unsupported type throws an exception.
@@ -38829,7 +38835,6 @@ declare namespace Excel {
          *
          */
         worksheetFormatChanged = "WorksheetFormatChanged",
-        wacoperationEvent = "WACOperationEvent",
         /**
          * RibbonCommandExecuted represents the type of event registered on ribbon, and occurs when user click on ribbon
          *
@@ -69714,11 +69719,22 @@ declare namespace Word {
         tableCell = "TableCell",
     }
     /**
-     * [Api set: WordApi]
+     * This enum sets where the cursor (insertion point) in the document is after a selection.
+     * 
+     * [Api set: WordApi 1.1]
      */
     enum SelectionMode {
+        /**
+         * The entire range is selected.
+         */
         select = "Select",
+        /**
+         * The cursor is at the beginning of the selection (just before the start of the selected range).
+         */
         start = "Start",
+        /**
+         * The cursor is at the end of the selection (just after the end of the selected range).
+         */
         end = "End",
     }
     /**
