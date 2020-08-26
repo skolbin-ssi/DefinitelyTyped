@@ -90,6 +90,11 @@ declare namespace jest {
      */
     function clearAllMocks(): typeof jest;
     /**
+     * Use the automatic mocking system to generate a mocked version of the given module.
+     */
+    // tslint:disable-next-line: no-unnecessary-generics
+    function createMockFromModule<T>(moduleName: string): T;
+    /**
      * Resets the state of all mocks.
      * Equivalent to calling .mockReset() on every mocked function.
      */
@@ -163,6 +168,7 @@ declare namespace jest {
      */
     function fn<T, Y extends any[]>(implementation?: (...args: Y) => T): Mock<T, Y>;
     /**
+     * (renamed to `createMockFromModule` in Jest 26.0.0+)
      * Use the automatic mocking system to generate a mocked version of the given module.
      */
     // tslint:disable-next-line: no-unnecessary-generics
@@ -1025,7 +1031,7 @@ declare namespace jest {
         /**
          * Used to test that a function throws a error matching the most recent snapshot when it is called.
          */
-        toThrowErrorMatchingSnapshot(): R;
+        toThrowErrorMatchingSnapshot(snapshotName?: string): R;
         /**
          * Used to test that a function throws a error matching the most recent snapshot when it is called.
          * Instead of writing the snapshot value to a .snap file, it will be written into the source code automatically.
