@@ -14,6 +14,7 @@
 //                 Elías García <https://github.com/elias-garcia>
 //                 Ian Sanders <https://github.com/iansan5653>
 //                 Jay Fong <https://github.com/fjc0k>
+//                 Lukas Elmer <https://github.com/lukaselmer>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 3.6
 
@@ -606,7 +607,6 @@ export class Ref {
     private readonly __isYupRef: true;
 }
 
-// tslint:disable-next-line:no-empty-interface
 export interface Lazy extends Schema<any> {}
 
 export interface FormatErrorParams {
@@ -624,6 +624,7 @@ export interface MixedLocale {
     oneOf?: TestOptionsMessage<{ values: any }>;
     notOneOf?: TestOptionsMessage<{ values: any }>;
     notType?: LocaleValue;
+    defined?: TestOptionsMessage;
 }
 
 export interface StringLocale {
@@ -644,6 +645,7 @@ export interface NumberLocale {
     max?: TestOptionsMessage<{ max: number }>;
     lessThan?: TestOptionsMessage<{ less: number }>;
     moreThan?: TestOptionsMessage<{ more: number }>;
+    notEqual?: TestOptionsMessage<{ notEqual: number }>;
     positive?: TestOptionsMessage<{ more: number }>;
     negative?: TestOptionsMessage<{ less: number }>;
     integer?: TestOptionsMessage;
@@ -655,7 +657,7 @@ export interface DateLocale {
 }
 
 export interface ObjectLocale {
-    noUnknown?: TestOptionsMessage;
+    noUnknown?: TestOptionsMessage<{ unknown: string }>;
 }
 
 export interface ArrayLocale {

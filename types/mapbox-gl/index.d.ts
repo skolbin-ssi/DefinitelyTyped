@@ -304,7 +304,8 @@ declare namespace mapboxgl {
                 | HTMLImageElement
                 | ArrayBufferView
                 | { width: number; height: number; data: Uint8Array | Uint8ClampedArray }
-                | ImageData,
+                | ImageData
+                | ImageBitmap,
             options?: { pixelRatio?: number; sdf?: boolean },
         ): this;
 
@@ -316,13 +317,13 @@ declare namespace mapboxgl {
 
         listImages(): string[];
 
-        addLayer(layer: mapboxgl.Layer | mapboxgl.CustomLayerInterface, before?: string): this;
+        addLayer(layer: mapboxgl.AnyLayer, before?: string): this;
 
         moveLayer(id: string, beforeId?: string): this;
 
         removeLayer(id: string): this;
 
-        getLayer(id: string): mapboxgl.Layer;
+        getLayer(id: string): mapboxgl.AnyLayer;
 
         setFilter(layer: string, filter?: any[] | boolean | null, options?: FilterOptions | null): this;
 
@@ -878,7 +879,7 @@ declare namespace mapboxgl {
     export interface IControl {
         onAdd(map: Map): HTMLElement;
 
-        onRemove(map: Map): any;
+        onRemove(map: Map): void;
 
         getDefaultPosition?: () => string;
     }
@@ -886,7 +887,11 @@ declare namespace mapboxgl {
     /**
      * Control
      */
-    export class Control extends Evented {}
+    export class Control extends Evented implements IControl {
+        onAdd(map: Map): HTMLElement;
+        onRemove(map: Map): void;
+        getDefaultPosition?: () => string;
+    }
 
     /**
      * Navigation
@@ -1045,7 +1050,7 @@ declare namespace mapboxgl {
         bearing?: number;
         center?: number[];
         glyphs?: string;
-        layers?: Layer[];
+        layers?: AnyLayer[];
         metadata?: any;
         name?: string;
         pitch?: number;
@@ -1870,18 +1875,9 @@ declare namespace mapboxgl {
         | HeatmapPaint
         | HillshadePaint;
 
-    export interface Layer {
+    interface Layer {
         id: string;
-        type?:
-            | 'fill'
-            | 'line'
-            | 'symbol'
-            | 'circle'
-            | 'fill-extrusion'
-            | 'raster'
-            | 'background'
-            | 'heatmap'
-            | 'hillshade';
+        type: string;
 
         metadata?: any;
         ref?: string;
@@ -1896,9 +1892,75 @@ declare namespace mapboxgl {
         interactive?: boolean;
 
         filter?: any[];
-        layout?: AnyLayout;
-        paint?: AnyPaint;
+        layout?: Layout;
+        paint?: object;
     }
+
+    interface BackgroundLayer extends Layer {
+        type: 'background';
+        layout?: BackgroundLayout;
+        paint?: BackgroundPaint;
+    }
+
+    interface CircleLayer extends Layer {
+        type: 'circle';
+        layout?: CircleLayout;
+        paint?: CirclePaint;
+    }
+
+    interface FillExtrusionLayer extends Layer {
+        type: 'fill-extrusion';
+        layout?: FillExtrusionLayout;
+        paint?: FillExtrusionPaint;
+    }
+
+    interface FillLayer extends Layer {
+        type: 'fill';
+        layout?: FillLayout;
+        paint?: FillPaint;
+    }
+
+    interface HeatmapLayer extends Layer {
+        type: 'heatmap';
+        layout?: HeatmapLayout;
+        paint?: HeatmapPaint;
+    }
+
+    interface HillshadeLayer extends Layer {
+        type: 'hillshade';
+        layout?: HillshadeLayout;
+        paint?: HillshadePaint;
+    }
+
+    interface LineLayer extends Layer {
+        type: 'line';
+        layout?: LineLayout;
+        paint?: LinePaint;
+    }
+
+    interface RasterLayer extends Layer {
+        type: 'raster';
+        layout?: RasterLayout;
+        paint?: RasterPaint;
+    }
+
+    interface SymbolLayer extends Layer {
+        type: 'symbol';
+        layout?: SymbolLayout;
+        paint?: SymbolPaint;
+    }
+
+    export type AnyLayer =
+        | BackgroundLayer
+        | CircleLayer
+        | FillExtrusionLayer
+        | FillLayer
+        | HeatmapLayer
+        | HillshadeLayer
+        | LineLayer
+        | RasterLayer
+        | SymbolLayer
+        | CustomLayerInterface;
 
     // See https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface
     export interface CustomLayerInterface {
@@ -1998,7 +2060,7 @@ declare namespace mapboxgl {
     }
 
     export interface FillLayout extends Layout {
-        'fill-sort-key'?: number;
+        'fill-sort-key'?: number | Expression;
     }
 
     export interface FillPaint {
@@ -2040,7 +2102,7 @@ declare namespace mapboxgl {
         'line-join'?: 'bevel' | 'round' | 'miter' | Expression;
         'line-miter-limit'?: number | Expression;
         'line-round-limit'?: number | Expression;
-        'line-sort-key'?: number;
+        'line-sort-key'?: number | Expression;
     }
 
     export interface LinePaint {
@@ -2159,7 +2221,7 @@ declare namespace mapboxgl {
     }
 
     export interface CircleLayout extends Layout {
-        'circle-sort-key'?: number;
+        'circle-sort-key'?: number | Expression;
     }
 
     export interface CirclePaint {

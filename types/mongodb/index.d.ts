@@ -1,4 +1,4 @@
-// Type definitions for MongoDB 3.5
+// Type definitions for MongoDB 3.6
 // Project: https://github.com/mongodb/node-mongodb-native
 //          https://github.com/mongodb/node-mongodb-native/tree/3.1
 // Definitions by: Federico Caselli <https://github.com/CaselIT>
@@ -31,6 +31,8 @@
 //                 HitkoDev <https://github.com/HitkoDev>
 //                 TJT <https://github.com/Celend>
 //                 Julien TASSIN <https://github.com/jtassin>
+//                 Anna Henningsen <https://github.com/addaleax>
+//                 Emmanuel Gautier <https://github.com/emmanuelgautier>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // Minimum TypeScript Version: 3.2
 
@@ -43,9 +45,6 @@ import { Binary, Decimal128, Double, Int32, Long, ObjectId, Timestamp } from 'bs
 import { EventEmitter } from 'events';
 import { Readable, Writable } from 'stream';
 import { checkServerIdentity } from 'tls';
-
-// We can use TypeScript Omit once minimum required TypeScript Version is above 3.5
-type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 type FlattenIfArray<T> = T extends ReadonlyArray<infer R> ? R : T;
 
@@ -90,6 +89,9 @@ export class MongoClient extends EventEmitter {
     withSession(operation: (session: ClientSession) => Promise<any>): Promise<void>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/MongoClient.html#withSession */
     withSession(options: SessionOptions, operation: (session: ClientSession) => Promise<any>): Promise<void>;
+
+    readPreference: ReadPreference;
+    writeConcern: WriteConcern;
 }
 
 /**
@@ -249,7 +251,7 @@ export class MongoError extends Error {
      * Checks the error to see if it has an error label
      */
     hasErrorLabel(label: string): boolean;
-    code?: number;
+    code?: number | string;
     /**
      * While not documented, the 'errmsg' prop is AFAIK the only way to find out
      * which unique index caused a duplicate key error. When you have multiple
@@ -481,18 +483,19 @@ export interface HighAvailabilityOptions {
 
 export type ReadPreferenceMode = 'primary' | 'primaryPreferred' | 'secondary' | 'secondaryPreferred' | 'nearest';
 export type ReadPreferenceOrMode = ReadPreference | ReadPreferenceMode;
+export type ReadPreferenceOptions = {
+    hedge?: { enabled?: boolean };
+    /**
+     * Max Secondary Read Staleness in Seconds
+     */
+    maxStalenessSeconds?: number;
+};
 
 // See http://mongodb.github.io/node-mongodb-native/3.1/api/ReadPreference.html
 export class ReadPreference {
-    constructor(mode: ReadPreferenceMode, tags: object);
+    constructor(mode: ReadPreferenceMode, tags: object, options?: ReadPreferenceOptions);
     mode: ReadPreferenceMode;
     tags: any;
-    options: {
-        /**
-         * Max Secondary Read Staleness in Seconds
-         */
-        maxStalenessSeconds?: number;
-    };
     static PRIMARY: 'primary';
     static PRIMARY_PREFERRED: 'primaryPreferred';
     static SECONDARY: 'secondary';
@@ -777,7 +780,10 @@ export class Db extends EventEmitter {
     collections(callback: MongoCallback<Array<Collection<Default>>>): void;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Db.html#command */
     command(command: object, callback: MongoCallback<any>): void;
-    command(command: object, options?: { readPreference: ReadPreferenceOrMode; session?: ClientSession }): Promise<any>;
+    command(
+        command: object,
+        options?: { readPreference?: ReadPreferenceOrMode; session?: ClientSession },
+    ): Promise<any>;
     command(
         command: object,
         options: { readPreference: ReadPreferenceOrMode; session?: ClientSession },
@@ -931,8 +937,15 @@ export interface CollectionCreateOptions extends CommonOptions {
     pkFactory?: object;
     readPreference?: ReadPreferenceOrMode;
     serializeFunctions?: boolean;
+    /**
+     * @deprecated
+     * @see https://jira.mongodb.org/browse/NODE-2746
+     */
     strict?: boolean;
     capped?: boolean;
+    /**
+     * @deprecated
+     */
     autoIndexId?: boolean;
     size?: number;
     max?: number;
@@ -1065,10 +1078,12 @@ export interface FSyncOptions extends CommonOptions {
     fsync?: boolean;
 }
 
-// TypeScript Omit (Exclude to be specific) does not work for objects with an "any" indexed type
+// TypeScript Omit (Exclude to be specific) does not work for objects with an "any" indexed type, and breaks discriminated unions
 type EnhancedOmit<T, K> = string | number extends keyof T
     ? T // T has indexed type e.g. { _id: string; [k: string]: any; } or it is "any"
-    : Omit<T, K>;
+    : T extends any
+    ? Pick<T, Exclude<keyof T, K>> // discriminated unions
+    : never;
 
 type ExtractIdType<TSchema> = TSchema extends { _id: infer U } // user has defined a type for _id
     ? {} extends U
@@ -1786,7 +1801,7 @@ export type RootQuerySelector<T> = {
         $search: string;
         $language?: string;
         $caseSensitive?: boolean;
-        $diacraticSensitive?: boolean;
+        $diacriticSensitive?: boolean;
     };
     /** https://docs.mongodb.com/manual/reference/operator/query/where/#op._S_where */
     $where?: string | Function;
@@ -2148,8 +2163,8 @@ export interface BulkWriteOpResultObject {
     modifiedCount?: number;
     deletedCount?: number;
     upsertedCount?: number;
-    insertedIds?: any;
-    upsertedIds?: any;
+    insertedIds?: { [index: number]: any };
+    upsertedIds?: { [index: number]: any };
     result?: any;
 }
 
@@ -2568,6 +2583,7 @@ export class Cursor<T = Default> extends Readable {
     addQueryModifier(name: string, value: boolean): Cursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#batchSize */
     batchSize(value: number): Cursor<T>;
+    bufferedCount(): number;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#clone */
     clone(): Cursor<T>; // still returns the same type
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#close */
@@ -2619,8 +2635,8 @@ export class Cursor<T = Default> extends Readable {
     project(value: SchemaMember<T, ProjectionOperators | number | boolean | any>): Cursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#read */
     read(size: number): string | Buffer | void;
-    /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#next */
-    returnKey(returnKey: object): Cursor<T>;
+    /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#returnKey */
+    returnKey(returnKey: boolean): Cursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#rewind */
     rewind(): void;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#setCursorOption */
@@ -2628,7 +2644,7 @@ export class Cursor<T = Default> extends Readable {
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#setReadPreference */
     setReadPreference(readPreference: ReadPreferenceOrMode): Cursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#showRecordId */
-    showRecordId(showRecordId: object): Cursor<T>;
+    showRecordId(showRecordId: boolean): Cursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#skip */
     skip(value: number): Cursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#snapshot */
@@ -2666,7 +2682,7 @@ export interface EndCallback {
 /** http://mongodb.github.io/node-mongodb-native/3.1/api/AggregationCursor.html#~resultCallback */
 export type AggregationCursorResult = object | null;
 /** http://mongodb.github.io/node-mongodb-native/3.1/api/AggregationCursor.html */
-export class AggregationCursor<T = Default> extends Readable {
+export class AggregationCursor<T = Default> extends Cursor<T> {
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/AggregationCursor.html#batchSize */
     batchSize(value: number): AggregationCursor<T>;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/AggregationCursor.html#clone */
@@ -2719,7 +2735,9 @@ export class AggregationCursor<T = Default> extends Readable {
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/AggregationCursor.html#unshift */
     unshift(stream: Buffer | string): void;
     /** http://mongodb.github.io/node-mongodb-native/3.1/api/AggregationCursor.html#unwind */
-    unwind<U = T>(field: string): AggregationCursor<U>;
+    unwind<U = T>(
+        field: string | { path: string; includeArrayIndex?: string; preserveNullAndEmptyArrays?: boolean },
+    ): AggregationCursor<U>;
 }
 
 /** http://mongodb.github.io/node-mongodb-native/3.1/api/CommandCursor.html#~resultCallback */
