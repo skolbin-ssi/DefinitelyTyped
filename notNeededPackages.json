@@ -741,6 +741,10 @@
             "libraryName": "diff2html",
             "asOfVersion": "3.0.0"
         },
+        "direction": {
+            "libraryName": "direction",
+            "asOfVersion": "2.0.0"
+        },
         "docker-file-parser": {
             "libraryName": "docker-file-parser",
             "asOfVersion": "1.0.3"
@@ -884,6 +888,10 @@
         "env-paths": {
             "libraryName": "env-paths",
             "asOfVersion": "2.1.0"
+        },
+        "err-code": {
+            "libraryName": "err-code",
+            "asOfVersion": "3.0.0"
         },
         "error-stack-parser": {
             "libraryName": "error-stack-parser",
@@ -1316,6 +1324,10 @@
         "hapi__lab": {
             "libraryName": "@hapi/lab",
             "asOfVersion": "22.0.0"
+        },
+        "hapi__podium": {
+            "libraryName": "@hapi/podium",
+            "asOfVersion": "4.1.3"
         },
         "hapi__topo": {
             "libraryName": "@hapi/topo",
@@ -3761,6 +3773,10 @@
         "systeminformation": {
             "libraryName": "systeminformation",
             "asOfVersion": "3.54.0"
+        },
+        "table": {
+            "libraryName": "table",
+            "asOfVersion": "6.3.2"
         },
         "tabris": {
             "libraryName": "tabris",
