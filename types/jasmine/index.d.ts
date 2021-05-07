@@ -1,4 +1,4 @@
-// Type definitions for Jasmine 3.6
+// Type definitions for Jasmine 3.7
 // Project: http://jasmine.github.io
 // Definitions by: Boris Yankov <https://github.com/borisyankov>
 //                 Theodore Brown <https://github.com/theodorejb>
@@ -237,13 +237,59 @@ declare namespace jasmine {
      * Configuration that can be used when configuring Jasmine via {@link jasmine.Env.configure}
      */
     interface EnvConfiguration {
+        /**
+         * Whether to randomize spec execution order
+         * @since 3.3.0
+         * @default true
+         */
         random?: boolean;
-        seed?: number;
+        /**
+         * Seed to use as the basis of randomization.
+         * Null causes the seed to be determined randomly at the start of execution.
+         * @since 3.3.0
+         * @default null
+         */
+        seed?: number | string;
+        /**
+         * Whether to stop execution of the suite after the first spec failure
+         * @since 3.3.0
+         * @default false
+         */
         failFast?: boolean;
+        /**
+         * Whether to fail the spec if it ran no expectations. By default
+         * a spec that ran no expectations is reported as passed. Setting this
+         * to true will report such spec as a failure.
+         * @since 3.5.0
+         * @default false
+         */
         failSpecWithNoExpectations?: boolean;
+        /**
+         * Whether to cause specs to only have one expectation failure.
+         * @since 3.3.0
+         * @default false
+         */
         oneFailurePerSpec?: boolean;
-        hideDisabled?: boolean;
+        /**
+         * Function to use to filter specs
+         * @since 3.3.0
+         * @default true
+         */
         specFilter?: Function;
+        /**
+         * Whether or not reporters should hide disabled specs from their output.
+         * Currently only supported by Jasmine's HTMLReporter
+         * @since 3.3.0
+         * @default false
+         */
+        hideDisabled?: boolean;
+        /**
+         * Set to provide a custom promise library that Jasmine will use if it needs
+         * to create a promise. If not set, it will default to whatever global Promise
+         * library is available (if any).
+         * @since 3.5.0
+         * @default undefined
+         */
         Promise?: Function;
     }
 
@@ -289,8 +335,11 @@ declare namespace jasmine {
     function arrayContaining<T>(sample: ArrayLike<T>): ArrayContaining<T>;
     function arrayWithExactContents<T>(sample: ArrayLike<T>): ArrayContaining<T>;
     function objectContaining<T>(sample: { [K in keyof T]?: ExpectedRecursive<T[K]> }): ObjectContaining<T>;
+    function mapContaining<K, V>(sample: Map<K, V>): AsymmetricMatcher<Map<K, V>>;
+    function setContaining<T>(sample: Set<T>): AsymmetricMatcher<Set<T>>;
 
     function setDefaultSpyStrategy<Fn extends Func = Func>(fn?: (and: SpyAnd<Fn>) => void): void;
+    function addSpyStrategy<Fn extends Func = Func>(name: string, factory: Fn): void;
     function createSpy<Fn extends Func>(name?: string, originalFn?: Fn): Spy<Fn>;
     function createSpyObj(baseName: string, methodNames: SpyObjMethodNames, propertyNames?: SpyObjPropertyNames): any;
     function createSpyObj<T>(
@@ -434,58 +483,65 @@ declare namespace jasmine {
 
     interface Env {
         addReporter(reporter: CustomReporter): void;
-
-        execute(): void;
-        describe(description: string, specDefinitions: () => void): Suite;
-        // ddescribe(description: string, specDefinitions: () => void): Suite; Not a part of jasmine. Angular team adds these
-        beforeEach(beforeEachFunction: ImplementationCallback, timeout?: number): void;
-        beforeAll(beforeAllFunction: ImplementationCallback, timeout?: number): void;
-        afterEach(afterEachFunction: ImplementationCallback, timeout?: number): void;
-        afterAll(afterAllFunction: ImplementationCallback, timeout?: number): void;
-        xdescribe(desc: string, specDefinitions: () => void): XSuite;
-        it(description: string, func: () => void): Spec;
-        // iit(description: string, func: () => void): Spec; Not a part of jasmine. Angular team adds these
-        xit(desc: string, func: () => void): XSpec;
-        addCustomEqualityTester(equalityTester: CustomEqualityTester): void;
-        addMatchers(matchers: CustomMatcherFactories): void;
-        specFilter(spec: Spec): boolean;
+        allowRespy(allow: boolean): void;
+        clearReporters(): void;
+        configuration(): EnvConfiguration;
+        configure(configuration: EnvConfiguration): void;
+        execute(runnablesToRun?: Suite[], onComplete?: Func): void;
         /**
-         * @deprecated Use oneFailurePerSpec option in {@link jasmine.Env.configure} instead.
+         * @deprecated Use hideDisabled option in {@link jasmine.Env.configure} instead.
          */
-        throwOnExpectationFailure(value: boolean): void;
+        hideDisabled(value: boolean): void;
         /**
-         * @deprecated Use failFast option in {@link jasmine.Env.configure} instead.
+         * @deprecated Check hideDisabled option in {@link jasmine.Env.configuration} instead.
          */
-        stopOnSpecFailure(value: boolean): void;
+        hidingDisabled(): boolean;
+        provideFallbackReporter(reporter: CustomReporter): void;
+        /**
+         * @deprecated Check random option in {@link jasmine.Env.configuration} instead.
+         */
+        randomTests(): boolean;
+        /**
+         * @deprecated Use random option in {@link jasmine.Env.configure} instead.
+         */
+        randomizeTests(value: boolean): void;
         /**
          * @deprecated Use seed option in {@link jasmine.Env.configure} instead.
          */
-        seed(seed: string | number): string | number;
-
+        seed(value?: number | string): boolean;
         /**
          * Sets a user-defined property that will be provided to reporters as
          * part of the properties field of SpecResult.
          * @since 3.6.0
          */
-        setSpecProperty(key: string, value: unknown): void;
-
+        setSpecProperty: typeof setSpecProperty;
         /**
          * Sets a user-defined property that will be provided to reporters as
          * part of the properties field of SuiteResult.
          * @since 3.6.0
          */
-        setSuiteProperty(key: string, value: unknown): void;
-
-        provideFallbackReporter(reporter: CustomReporter): void;
-        throwingExpectationFailures(): boolean;
-        allowRespy(allow: boolean): void;
-        randomTests(): boolean;
+        setSuiteProperty: typeof setSuiteProperty;
         /**
-         * @deprecated Use random option in {@link jasmine.Env.configure} instead.
+         * @deprecated Use specFilter option in {@link jasmine.Env.configure} instead.
          */
-        randomizeTests(b: boolean): void;
-        clearReporters(): void;
-        configure(configuration: EnvConfiguration): void;
+        specFilter(spec: Spec): boolean;
+        /**
+         * @deprecated Use failFast option in {@link jasmine.Env.configure} instead.
+         */
+        stopOnSpecFailure(value: boolean): void;
+        /**
+         * @deprecated Check failFast option in {@link jasmine.Env.configuration} instead.
+         */
+        stoppingOnSpecFailure(): boolean;
+        /**
+         * @deprecated Use oneFailurePerSpec option in {@link jasmine.Env.configure} instead.
+         */
+        throwOnExpectationFailure(value: boolean): void;
+        /**
+         * @deprecated Check oneFailurePerSpec option in {@link jasmine.Env.configuration} instead.
+         */
+        throwingExpectationFailures(): boolean;
+        topSuite(): Suite;
     }
 
     interface HtmlReporter {
@@ -515,9 +571,9 @@ declare namespace jasmine {
     }
 
     interface Order {
-        new (options: { random: boolean; seed: string }): any;
+        new (options: { random: boolean, seed: number | string }): any;
         random: boolean;
-        seed: string;
+        seed: number | string;
         sort<T>(items: T[]): T[];
     }
 
@@ -752,6 +808,7 @@ declare namespace jasmine {
 
     interface SuiteInfo {
         totalSpecsDefined: number;
+        order: Order;
     }
 
     interface CustomReportExpectation {
@@ -825,8 +882,12 @@ declare namespace jasmine {
     }
 
     interface RunDetails {
-        failedExpectations: ExpectationResult[];
+        overallStatus: string;
+        totalTime: number;
+        incompleteReason: string;
         order: Order;
+        failedExpectations: ExpectationResult[];
+        deprecationWarnings: ExpectationResult[];
     }
 
     interface CustomReporter {
@@ -1028,40 +1089,51 @@ declare namespace jasmine {
      * Set this to a lower value to speed up pretty printing if you have large objects.
      */
     var MAX_PRETTY_PRINT_DEPTH: number;
+
+    var version: string;
 }
 
 declare module "jasmine" {
     class jasmine {
-        constructor(options: any);
         jasmine: jasmine.Jasmine;
-        addMatchers(matchers: jasmine.CustomMatcherFactories): void;
-        addReporter(reporter: jasmine.CustomReporter): void;
-        addSpecFile(filePath: string): void;
-        addSpecFiles(files: string[]): void;
-        configureDefaultReporter(options: any, ...args: any[]): void;
-        execute(files?: string[], filterString?: string): any;
-        exitCodeCompletion(passed: any): void;
-        loadConfig(config: any): void;
-        loadConfigFile(configFilePath: any): void;
-        loadHelpers(): void;
-        loadSpecs(): void;
-        onComplete(onCompleteCallback: (passed: boolean) => void): void;
-        provideFallbackReporter(reporter: jasmine.CustomReporter): void;
-        randomizeTests(value?: any): boolean;
-        seed(value: any): void;
-        showColors(value: any): void;
-        stopSpecOnExpectationFailure(value: any): void;
-        static ConsoleReporter(): any;
         env: jasmine.Env;
         reportersCount: number;
         completionReporter: jasmine.CustomReporter;
         reporter: jasmine.CustomReporter;
-        coreVersion(): string;
         showingColors: boolean;
         projectBaseDir: string;
-        printDeprecation(): void;
+        specDir: string;
         specFiles: string[];
         helperFiles: string[];
+        requires: string[];
+        onCompleteCallbackAdded: boolean;
+        defaultReporterConfigured: boolean;
+
+        constructor(options: any);
+        addMatchers(matchers: jasmine.CustomMatcherFactories): void;
+        addReporter(reporter: jasmine.CustomReporter): void;
+        addSpecFile(filePath: string): void;
+        addSpecFiles(files: string[]): void;
+        addHelperFiles(files: string[]): void;
+        addRequires(files: string[]): void;
+        configureDefaultReporter(options: any, ...args: any[]): void;
+        execute(files?: string[], filterString?: string): Promise<void>;
+        exitCodeCompletion(passed: boolean): void;
+        loadConfig(config: any): void;
+        loadConfigFile(configFilePath?: string): void;
+        loadHelpers(): Promise<void>;
+        loadSpecs(): Promise<void>;
+        loadRequires(): void;
+        onComplete(onCompleteCallback: (passed: boolean) => void): void;
+        provideFallbackReporter(reporter: jasmine.CustomReporter): void;
+        clearReporters(): void;
+        randomizeTests(value?: boolean): void;
+        seed(value: number): void;
+        showColors(value: boolean): void;
+        stopSpecOnExpectationFailure(value: boolean): void;
+        stopOnSpecFailure(value: boolean): void;
+        static ConsoleReporter(): any;
+        coreVersion(): string;
     }
     export = jasmine;
 }
