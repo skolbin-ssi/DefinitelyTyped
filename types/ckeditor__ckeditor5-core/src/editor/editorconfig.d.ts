@@ -12,14 +12,14 @@ import { ImageConfig } from '@ckeditor/ckeditor5-image/src/image';
 import { TextPartLanguageOption } from '@ckeditor/ckeditor5-language/src/textpartlanguage';
 import { LinkConfig } from '@ckeditor/ckeditor5-link/src/link';
 import { PaginationConfig } from '@ckeditor/ckeditor5-pagination/src/pagination';
+import { RealTimeCollaborationConfig } from '@ckeditor/ckeditor5-real-time-collaboration/src/realtimecollaborativeediting';
+import { TableConfig } from '@ckeditor/ckeditor5-table/src/table';
 import { TrackChangesConfig } from '@ckeditor/ckeditor5-track-changes/src/trackchanges';
 import { TypingConfig } from '@ckeditor/ckeditor5-typing/src/typing';
 import { WordCountConfig } from '@ckeditor/ckeditor5-word-count/src/wordcount';
 import ContextPlugin from '../contextplugin';
 import Plugin, { PluginInterface } from '../plugin';
 
-// TODO: import {RealTimeCollaborationConfig} from "@ckeditor/ckeditor5-real-time-collaboration/src/realtimecollaborativeediting";
-type RealTimeCollaborationConfig = any;
 // TODO: import {CommentsConfig} from "@ckeditor/ckeditor5-comments/src/comments";
 type CommentsConfig = any;
 // import {FontBackgroundColorConfig} from "@ckeditor/ckeditor5-font/src/fontbackgroundcolor";
@@ -43,8 +43,6 @@ type RestrictedEditingModeConfig = any;
 type SidebarConfig = any;
 // TODO: import {SimpleUploadConfig} from "@ckeditor/ckeditor5-upload/src/adapters/simpleuploadadapter";
 type SimpleUploadConfig = any;
-// TODO: import {TableConfig} from "@ckeditor/ckeditor5-table/src/table";
-type TableConfig = any;
 
 export interface EditorConfig {
     alignment?: AlignmentConfig;
