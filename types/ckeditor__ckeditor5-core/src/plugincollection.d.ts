@@ -15,7 +15,7 @@ export default class PluginCollection implements Emitter, Iterable<[typeof Plugi
 
     [Symbol.iterator](): Iterator<[typeof Plugin, Plugin]>;
     destroy(): Promise<void>;
-    get(key: (() => Plugin) | string): Plugin;
+    get(key: (() => Plugin) | string): new () => Plugin;
     has(key: (() => Plugin) | string): boolean;
     init(
         plugins: Array<(() => Plugin) | string>,
@@ -38,7 +38,7 @@ export default class PluginCollection implements Emitter, Iterable<[typeof Plugi
         emitter: Emitter,
         event: string,
         callback: (info: EventInfo, data: DomEventData) => void,
-        options?: { priority?: PriorityString | number },
+        options?: { priority?: PriorityString | number | undefined },
     ): void;
     stopListening(emitter?: Emitter, event?: string, callback?: (info: EventInfo, data: DomEventData) => void): void;
     fire(eventOrInfo: string | EventInfo, ...args: any[]): any;

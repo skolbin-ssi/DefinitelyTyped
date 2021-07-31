@@ -782,6 +782,8 @@ async function testManagementForPromise() {
 // https://developer.chrome.com/docs/extensions/reference/scripting
 async function testScriptingForPromise() {
     await chrome.scripting.executeScript({target: {tabId: 0}});
+    await chrome.scripting.executeScript({target: {tabId: 0}, func: () => {}, args: []})
+    await chrome.scripting.executeScript({target: {tabId: 0}, func: () => {}, args: {}}) // $ExpectError
     await chrome.scripting.insertCSS({target: {tabId: 0}});
 }
 
@@ -892,4 +894,25 @@ async function testDeclarativeNetRequestForPromise() {
     await chrome.declarativeNetRequest.updateDynamicRules({});
     await chrome.declarativeNetRequest.updateEnabledRulesets({});
     await chrome.declarativeNetRequest.updateSessionRules({});
+}
+
+// https://developer.chrome.com/docs/extensions/reference/storage
+function testStorageForPromise() {
+    chrome.storage.sync.getBytesInUse().then(() => {});
+    chrome.storage.sync.getBytesInUse(null).then(() => {});
+    chrome.storage.sync.getBytesInUse('testKey').then(() => {});
+    chrome.storage.sync.getBytesInUse(['testKey']).then(() => {});
+
+    chrome.storage.sync.clear().then(() => {});
+
+    chrome.storage.sync.set({ testKey: 'testValue' }).then(() => {});
+
+    chrome.storage.sync.remove('testKey').then(() => {});
+    chrome.storage.sync.remove(['testKey']).then(() => {});
+
+    chrome.storage.sync.get().then(() => {});
+    chrome.storage.sync.get(null).then(() => {});
+    chrome.storage.sync.get('testKey').then(() => {});
+    chrome.storage.sync.get(['testKey']).then(() => {});
+    chrome.storage.sync.get({ testKey: 'testDefaultValue' }).then(() => {});
 }
