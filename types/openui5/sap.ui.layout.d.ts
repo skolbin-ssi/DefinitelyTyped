@@ -1,4 +1,4 @@
-// For Library Version: 1.93.0
+// For Library Version: 1.98.0
 
 declare module "sap/ui/layout/library" {
   import Control from "sap/ui/core/Control";
@@ -1642,9 +1642,9 @@ declare module "sap/ui/layout/cssgrid/CSSGrid" {
    * 			to the `customLayout` aggregation of the `CSSGrid` and configure how it will look in different breakpoints
    * 			(S, M, L, XL).
    *
-   * Current Limitations:
-   * 	 - No alignment and ordering
-   * 	 - No Named grid areas and lines
+   * Out of current scope::
+   * 	 - Alignment and ordering
+   * 	 - Named grid areas and lines
    */
   export default class CSSGrid
     extends Control
@@ -2888,6 +2888,8 @@ declare module "sap/ui/layout/cssgrid/GridLayoutBase" {
 
   import ManagedObjectMetadata from "sap/ui/base/ManagedObjectMetadata";
 
+  import { cssgrid } from "sap/ui/layout/library";
+
   /**
    * @SINCE 1.60
    *
@@ -2990,6 +2992,24 @@ declare module "sap/ui/layout/cssgrid/GridLayoutBase" {
     getActiveGridSettings(): void;
 
     isResponsive(): boolean;
+    /**
+     * Hook function for the Grid's onAfterRendering
+     */
+    onGridAfterRendering(
+      /**
+       * The grid
+       */
+      oGrid: cssgrid.IGridConfigurable
+    ): void;
+    /**
+     * Hook function for the Grid's resize. Will be called if the grid layout is responsive.
+     */
+    onGridResize(
+      /**
+       * The event passed by the resize handler
+       */
+      oEvent: jQuery.Event
+    ): void;
   }
 
   export interface $GridLayoutBaseSettings extends $ManagedObjectSettings {}

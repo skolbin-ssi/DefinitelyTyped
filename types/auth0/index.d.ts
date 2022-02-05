@@ -1,8 +1,6 @@
 // Type definitions for auth0 2.34
 // Project: https://github.com/auth0/node-auth0
-// Definitions by: Seth Westphal <https://github.com/westy92>
-//                 Ian Howe <https://github.com/ianhowe76>
-//                 Alex Bjørlig <https://github.com/dauledk>
+// Definitions by: Ian Howe <https://github.com/ianhowe76>
 //                 Dan Rumney <https://github.com/dancrumb>
 //                 Peter <https://github.com/pwrnrd>
 //                 Anthony Messerschmidt <https://github.com/CatGuardian>
@@ -13,6 +11,7 @@
 //                 Piotr Błażejewicz <https://github.com/peterblazejewicz>
 //                 Dan Ursin <https://github.com/danursin>
 //                 Nathan Hardy <https://github.com/nhardy>
+//                 Nicholas Molen <https://github.com/robotastronaut>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 export interface ManagementClientOptions {
@@ -633,9 +632,19 @@ export interface RequestSMSOptions {
     phone_number: string;
 }
 
-export interface VerifyOptions {
+export interface VerifySMSOptions {
+    username: string;
+    otp: string;
+}
+
+export interface VerifySMSOptionsDeprecated {
     username: string;
     password: string;
+}
+
+export interface VerifyEmailOptions {
+    email: string;
+    otp: string;
 }
 
 export interface DelegationTokenOptions {
@@ -975,6 +984,7 @@ export interface SignInOptions {
     username: string;
     otp: string;
     realm?: 'email' | 'sms';
+    audience?: string | undefined;
     /**
      * @deprecated
      */
@@ -1120,11 +1130,11 @@ export class AuthenticationClient {
     requestSMSCode(data: RequestSMSOptions): Promise<any>;
     requestSMSCode(data: RequestSMSOptions, cb: (err: Error, message: string) => void): void;
 
-    verifyEmailCode(data: VerifyOptions): Promise<any>;
-    verifyEmailCode(data: VerifyOptions, cb: (err: Error, message: string) => void): void;
+    verifyEmailCode(data: VerifyEmailOptions): Promise<any>;
+    verifyEmailCode(data: VerifyEmailOptions, cb: (err: Error, message: string) => void): void;
 
-    verifySMSCode(data: VerifyOptions): Promise<any>;
-    verifySMSCode(data: VerifyOptions, cb: (err: Error, message: string) => void): void;
+    verifySMSCode(data: VerifySMSOptions | VerifySMSOptionsDeprecated): Promise<any>;
+    verifySMSCode(data: VerifySMSOptions | VerifySMSOptionsDeprecated, cb: (err: Error, message: string) => void): void;
 
     getDelegationToken(data: DelegationTokenOptions): Promise<any>;
     getDelegationToken(data: DelegationTokenOptions, cb: (err: Error, message: string) => void): void;
@@ -1168,6 +1178,10 @@ export interface Organization {
         };
     } | undefined;
     metadata?: any;
+}
+
+export interface OrganizationsPaged extends Omit<Page, 'length'> {
+    organizations: Organization[];
 }
 
 export interface CreateOrganization {
@@ -1229,6 +1243,10 @@ export interface OrganizationMember {
     email?: string | undefined;
 }
 
+export interface OrganizationMembersPaged extends Omit<Page, 'length'> {
+    members: OrganizationMember[];
+}
+
 export interface OrganizationInvitation {
     id: string;
     organization_id: string;
@@ -1247,6 +1265,10 @@ export interface OrganizationInvitation {
     user_metadata?: any;
     ticket_id: string;
     roles?: string[] | undefined;
+}
+
+export interface OrganizationInvitationsPaged extends Omit<Page, 'length'> {
+    invitations: OrganizationInvitation[];
 }
 
 export interface CreateOrganizationInvitation {
@@ -1289,8 +1311,10 @@ export class OrganizationsManager {
 
     getAll(): Promise<Organization[]>;
     getAll(cb: (err: Error, organizations: Organization[]) => void): void;
-    getAll(params: PagingOptions): Promise<Organization[]>;
-    getAll(params: PagingOptions, cb: (err: Error, organizations: Organization[]) => void): void;
+    getAll(params: PagingOptions & { include_totals?: false; }): Promise<Organization[]>;
+    getAll(params: PagingOptions & { include_totals: true; }): Promise<OrganizationsPaged>;
+    getAll(params: PagingOptions & { include_totals?: false; }, cb: (err: Error, organizations: Organization[]) => void): void;
+    getAll(params: PagingOptions & { include_totals: true; }, cb: (err: Error, pagedOrganizations: OrganizationsPaged) => void): void;
     getAll(params: CheckpointPagingOptions): Promise<Organization[]>;
     getAll(params: CheckpointPagingOptions, cb: (err: Error, organizations: Organization[]) => void): void;
 
@@ -1338,8 +1362,10 @@ export class OrganizationsManager {
         cb: (err: Error, connection: OrganizationConnection) => void,
     ): void;
 
-    getMembers(params: ObjectWithId & PagingOptions): Promise<OrganizationMember[]>;
-    getMembers(params: ObjectWithId & PagingOptions, cb: (err: Error, members: OrganizationMember[]) => void): void;
+    getMembers(params: ObjectWithId & PagingOptions & { include_totals?: false; }): Promise<OrganizationMember[]>;
+    getMembers(params: ObjectWithId & PagingOptions & { include_totals: true; }): Promise<OrganizationMembersPaged>;
+    getMembers(params: ObjectWithId & PagingOptions & { include_totals?: false; }, cb: (err: Error, members: OrganizationMember[]) => void): void;
+    getMembers(params: ObjectWithId & PagingOptions & { include_totals: true; }, cb: (err: Error, pagedMembers: OrganizationMembersPaged) => void): void;
     getMembers(params: ObjectWithId & CheckpointPagingOptions): Promise<OrganizationMember[]>;
     getMembers(
         params: ObjectWithId & CheckpointPagingOptions,
@@ -1353,11 +1379,22 @@ export class OrganizationsManager {
     removeMembers(params: ObjectWithId, data: RemoveOrganizationMembers, cb: (err: Error) => void): void;
 
     getInvitations(
-        params: ObjectWithId & PagingOptions & { fields?: string; include_fields?: boolean; sort?: string },
+        params: ObjectWithId &
+            PagingOptions & { fields?: string; include_fields?: boolean; sort?: string; include_totals?: false },
     ): Promise<OrganizationInvitation[]>;
     getInvitations(
-        params: ObjectWithId & PagingOptions & { fields?: string; include_fields?: boolean; sort?: string },
+        params: ObjectWithId &
+            PagingOptions & { fields?: string; include_fields?: boolean; sort?: string; include_totals: true },
+    ): Promise<OrganizationInvitationsPaged>;
+    getInvitations(
+        params: ObjectWithId &
+            PagingOptions & { fields?: string; include_fields?: boolean; sort?: string; include_totals?: false },
         cb: (err: Error, invitations: OrganizationInvitation[]) => void,
+    ): void;
+    getInvitations(
+        params: ObjectWithId &
+            PagingOptions & { fields?: string; include_fields?: boolean; sort?: string; include_totals: true },
+        cb: (err: Error, pagedInvitations: OrganizationInvitationsPaged) => void,
     ): void;
 
     getInvitation(
@@ -1378,10 +1415,15 @@ export class OrganizationsManager {
     deleteInvitation(params: ObjectWithId & { invitation_id: string }): Promise<void>;
     deleteInvitation(params: ObjectWithId & { invitation_id: string }, cb: (err: Error) => void): void;
 
-    getMemberRoles(params: ObjectWithId & PagingOptions & { user_id: string }): Promise<Role[]>;
+    getMemberRoles(params: ObjectWithId & PagingOptions & { user_id: string; include_totals?: false }): Promise<Role[]>;
+    getMemberRoles(params: ObjectWithId & PagingOptions & { user_id: string; include_totals: true }): Promise<Omit<RolePage, 'length'>>;
     getMemberRoles(
-        params: ObjectWithId & PagingOptions & { user_id: string },
+        params: ObjectWithId & PagingOptions & { user_id: string; include_totals?: false },
         cb: (err: Error, roles: Role[]) => void,
+    ): void;
+    getMemberRoles(
+        params: ObjectWithId & PagingOptions & { user_id: string; include_totals: true },
+        cb: (err: Error, roles: Omit<RolePage, 'length'>) => void,
     ): void;
 
     addMemberRoles(params: ObjectWithId & { user_id: string }, data: AddOrganizationMemberRoles): Promise<void>;
