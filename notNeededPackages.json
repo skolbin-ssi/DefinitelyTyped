@@ -92,6 +92,10 @@
             "libraryName": "amazon-connect-streams",
             "asOfVersion": "1.4.8"
         },
+        "amqp-connection-manager": {
+            "libraryName": "amqp-connection-manager",
+            "asOfVersion": "3.4.0"
+        },
         "angular-dynamic-locale": {
             "libraryName": "angular-dynamic-locale",
             "asOfVersion": "0.1.35"
@@ -5014,6 +5018,10 @@
         "svg-pan-zoom": {
             "libraryName": "svg-pan-zoom",
             "asOfVersion": "3.4.0"
+        },
+        "svg-path-bbox": {
+            "libraryName": "svg-path-bbox",
+            "asOfVersion": "1.1.0"
         },
         "svg-tag-names": {
             "libraryName": "svg-tag-names",

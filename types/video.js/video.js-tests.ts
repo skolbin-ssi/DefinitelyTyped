@@ -42,6 +42,7 @@ const playerOptions: VideoJsPlayerOptions = {
     nativeControlsForTouch: true,
     notSupportedMessage: 'Oh no! :(',
     playbackRates: [0.5, 1],
+    noUITitleAttributes: true,
     plugins: {
         myPlugin: {
             myOption: true,
@@ -123,6 +124,7 @@ videojs('example_video_1', playerOptions).ready(function playerReady() {
     liveTracker.seekToLiveEdge();
     liveTracker.startTracking();
     liveTracker.stopTracking();
+    liveTracker.nextSeekedFromUser();
     const isTracking: boolean = liveTracker.isTracking();
 
     const whereYouAt: number = this.currentTime();
@@ -158,6 +160,12 @@ videojs('example_video_1', playerOptions).ready(function playerReady() {
     this.height(480);
 
     const readyState: videojs.ReadyState = this.readyState();
+
+    // $ExpectType string
+    const currentBreakPoint = this.currentBreakpoint();
+
+    // $ExpectType string
+    const currentBreakpointClass: string = this.currentBreakpointClass();
 
     this.requestFullscreen();
 
@@ -253,7 +261,12 @@ function testComponents(player: videojs.Player) {
     myOtherWindow.open();
     myOtherWindow.close();
     myOtherWindow.myFunction(); // $ExpectType void
-    myOtherWindow.myOtherFunction('test'); // $ExpectType string
+    myOtherWindow.myOtherFunction("test"); // $ExpectType string
+
+    const MyClickableComponent = videojs.extend(videojs.getComponent("clickablecomponent"));
+    const myClickable = new MyClickableComponent(player, {
+        clickHandler: () => {}
+    });
 }
 
 function testPlugin(player: videojs.Player, options: {}) {

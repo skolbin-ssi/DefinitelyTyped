@@ -1057,12 +1057,16 @@ declare namespace videojs {
               children?: Child[] | undefined;
           };
 
+    interface ClickableComponentOptions extends ComponentOptions {
+        clickHandler?: () => void;
+    }
+
     /**
      * Clickable Component which is clickable or keyboard actionable,
      * but is not a native HTML button.
      */
     interface ClickableComponent extends Component {
-        options_: ComponentOptions;
+        options_: ClickableComponentOptions;
 
         /**
          * Builds the default DOM `className`.
@@ -1195,7 +1199,7 @@ declare namespace videojs {
          * @param [options]
          *         The key/value store of player options.
          */
-        new (player: Player, options?: ComponentOptions): ClickableComponent;
+        new (player: Player, options?: ClickableComponentOptions): ClickableComponent;
     };
 
     /**
@@ -3090,6 +3094,13 @@ declare namespace videojs {
          * See the seekableendchange event and the pastSeekEnd() function for more info.
          */
         behindLiveEdge(): boolean;
+
+        /**
+         * The next seeked event is from the user. Meaning that any seek
+         * > 2s behind live will be considered behind live for real and
+         * liveTolerance will be ignored.
+         */
+        nextSeekedFromUser(): void;
 
         /**
          * live current time is our best approximation of what the live current time is.
@@ -6304,6 +6315,23 @@ export interface VideoJsPlayer extends videojs.Component {
     createModal(content: string | (() => any) | Element | any[], options: any): videojs.ModalDialog;
 
     /**
+     * Get current breakpoint name, if any.
+     *
+     * @return If there is currently a breakpoint set, returns a the key from the
+     *         breakpoints object matching it. Otherwise, returns an empty string.
+     */
+    currentBreakpoint(): string;
+
+    /**
+     * Get the current breakpoint class name.
+     *
+     * @return The matching class name (e.g. `"vjs-layout-tiny"` or
+     *         `"vjs-layout-large"`) for the current breakpoint. Empty string if
+     *         there is no current breakpoint.
+     */
+    currentBreakpointClass(): string;
+
+    /**
      * Returns the current source object.
      *
      * @return The current source object
@@ -7068,6 +7096,7 @@ export interface VideoJsPlayerOptions extends videojs.ComponentOptions {
     nativeControlsForTouch?: boolean | undefined;
     notSupportedMessage?: string | undefined;
     playbackRates?: number[] | undefined;
+    noUITitleAttributes?: boolean | undefined;
     plugins?: Partial<VideoJsPlayerPluginOptions> | undefined;
     poster?: string | undefined;
     preload?: string | undefined;
