@@ -124,6 +124,26 @@ export function request<RT extends ResponseType | undefined>(
 ): RefinedResponse<RT>;
 
 /**
+ * Make async request.
+ * https://k6.io/docs/javascript-api/k6-http/asyncrequest/
+ * @param method - HTTP method.
+ * @param url - Request URL.
+ * @param body - Request body. Object form encoded.
+ * @param params - Request parameters.
+ * @returns Resulting response.
+ * @example
+ * let formData = {name: 'k6'};
+ * let headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+ * http.asyncRequest('POST', url, formData, { headers: headers });
+ */
+export function asyncRequest<RT extends ResponseType | undefined>(
+    method: string,
+    url: string | HttpURL,
+    body?: RequestBody | null,
+    params?: RefinedParams<RT> | null
+): Promise<RefinedResponse<RT>>;
+
+/**
  * Batch multiple HTTP requests together,
  * to issue them in parallel over multiple TCP connections.
  * https://k6.io/docs/javascript-api/k6-http/batch-requests
@@ -708,6 +728,23 @@ export class CookieJar {
      * @param options - Optional settings.
      */
     set(url: string, name: string, value: string, options?: CookieOptions | null): void;
+
+    /**
+     * Delete all cookies for the given URL.
+     * https://k6.io/docs/javascript-api/k6-http/cookiejar/cookiejar-clear
+     * @param url - URL to delete all cookies for.
+     */
+
+    clear(url: string): void;
+
+    /**
+     * Deletes specific cookie by name for the given URL.
+     * https://k6.io/docs/javascript-api/k6-http/cookiejar/cookiejar-delete/
+     * @param url - URL to delete cookie for.
+     * @param name - Cookie name to delete.
+     */
+
+    delete(url: string, name: string): void;
 }
 
 /**
@@ -885,6 +922,26 @@ declare namespace http {
         body?: RequestBody | null,
         params?: RefinedParams<RT> | null
     ): RefinedResponse<RT>;
+
+    /**
+     * Make async request.
+     * https://k6.io/docs/javascript-api/k6-http/asyncrequest/
+     * @param method - HTTP method.
+     * @param url - Request URL.
+     * @param body - Request body. Object form encoded.
+     * @param params - Request parameters.
+     * @returns Resulting response.
+     * @example
+     * let formData = {name: 'k6'};
+     * let headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+     * http.asyncRequest('POST', url, formData, { headers: headers });
+     */
+    function asyncRequest<RT extends ResponseType | undefined>(
+        method: string,
+        url: string | HttpURL,
+        body?: RequestBody | null,
+        params?: RefinedParams<RT> | null
+    ): Promise<RefinedResponse<RT>>;
 
     /**
      * Creates a URL with set name tag.

@@ -1,9 +1,20 @@
-// Expect test for language chains
+import { NightwatchExpectResult } from 'nightwatch/expect';
 
+import { isNightwatchAPI, isNull } from "./utils";
+
+function isNightwatchExpectResult(result: NightwatchExpectResult) {}
+function isPromise(v: PromiseLike<any>) {}
+
+// Expect test for language chains
 it('expect.equal(value)/.contain(value)/.match(regex)', () => {
     browser.expect.element('#main').text.to.equal('The Night Watch');
     browser.expect.element('#main').text.to.contain('The Night Watch');
     browser.expect.element('#main').to.have.css('display').which.equals('block');
+
+    // with section
+    browser.expect.section('@main').text.to.equal('The Night Watch');
+    browser.expect.section('@main').text.to.contain('The Night Watch');
+    browser.expect.section('@main').to.have.css('display').which.equals('block');
 });
 
 it('expect.startWith(value)/.endWith(value)', () => {
@@ -39,6 +50,8 @@ describe('expect.element()', () => {
         browser.expect.element('#main').to.be.active;
         browser.expect.element('#main').to.not.be.active;
         browser.expect.element('#main').to.be.active.before(100);
+        // with two properties together
+        browser.expect.element('#main').to.be.active.and.visible;
     });
 
     it('have .attribute()', () => {
@@ -53,6 +66,10 @@ describe('expect.element()', () => {
             .element('body')
             .to.have.attribute('data-attr')
             .which.matches(/^something\ else/);
+        // with assertion before the attribute property
+        browser.expect.element('body').to.contain('Search').with.attribute('placeholder');
+        // with multiple properties
+        browser.expect.element('input[name=q]').to.have.attribute('class').and.attribute('id').contain('searchbox');
     });
 
     it('have .css(property)', () => {
@@ -60,7 +77,7 @@ describe('expect.element()', () => {
         browser.expect.element('#main').to.have.css('display', 'Testing for display');
         browser.expect.element('#main').to.not.have.css('display');
         browser.expect.element('#main').to.have.css('display').before(100);
-        browser.expect.element('#main').to.have.css('display').which.equals('block');
+        browser.expect.element('#main').to.have.css('display').which.eq('block');
         browser.expect.element('#main').to.have.css('display').which.contains('some value');
         browser.expect
             .element('#main')
@@ -118,12 +135,42 @@ describe('expect.element()', () => {
         browser.expect.element('#main').to.not.be.visible;
         browser.expect.element('#main').to.be.visible.before(100);
     });
+
+    it('have .domProperty(property)', () => {
+        browser.expect.element('#main').to.have.domProperty('classList');
+        browser.expect.element('#main').to.have.domProperty('classList', 'Testing DOM property classList exists');
+        browser.expect.element('#main').to.not.have.domProperty('classList');
+        browser.expect.element('#main').to.have.domProperty('classList').before(100);
+        browser.expect.element('#main').to.have.domProperty('classList').which.equals('js-search-input');
+        browser.expect.element('#main').to.have.domProperty('classList').which.includes('search');
+        browser.expect
+            .element('#main')
+            .to.have.domProperty('classList')
+            .which.matches(/search/);
+    });
+});
+
+describe('expect.section()', () => {
+    // Just check if it contains some properties of `expect.element()`.
+    it('have .present', () => {
+        browser.expect.section('@main').to.be.present;
+        browser.expect.section('@main').to.not.be.present;
+        browser.expect.section('@main').to.be.present.before(100);
+    });
+
+    it('have .visible', () => {
+        browser.expect.section('@main').to.be.visible;
+        browser.expect.section('@main').to.not.be.visible;
+        browser.expect.section('@main').to.be.visible.before(100);
+    });
 });
 
 describe('expect.elements()', () => {
     it('description', () => {
         browser.expect.elements('div').count.to.equal(10);
         browser.expect.elements('p').count.to.not.equal(1);
+        // @ts-expect-error
+        browser.expect.elements('div').value.contain('nightwatch');
     });
 
     it('selector element properties - all & required', () => {
@@ -148,6 +195,28 @@ it('expect.title()', () => {
 });
 
 it('expect.url()', () => {
+    browser.expect.url().to.equal('https://nightwatch.org');
     browser.expect.url().to.contain('https://');
     browser.expect.url().to.endWith('.org');
+});
+
+it('chains expect assertions', () => {
+    browser
+        .navigateTo('https://duckduckgo.com')
+        .expect.element('input[name=q]').with.attribute('placeholder').toContain('Search')
+        .expect.elements('input').count.toEqual(4)
+        .assert.titleContains('Privacy')
+        .url('https://google.com');
+
+    const result = browser.expect.elements('div').count.toEqual(4);
+    isNightwatchAPI(result);
+
+    // @ts-expect-error
+    isPromise(result);
+});
+
+it('works with async/await', async () => {
+    const result = await browser.expect.element('#main').text.to.equal('The Night Watch');
+    isNightwatchExpectResult(result);
+    isNull(result.value);
 });

@@ -12,7 +12,7 @@
 // Import from dependencies
 import { Readable as ReadableStream } from 'stream';
 import { EventEmitter } from 'events';
-import { AgentOptions } from 'https';
+import { RequestOptions } from 'https';
 
 // Exports only from typings
 export type Region = 'us-east-1' |
@@ -90,7 +90,7 @@ export interface BucketItem {
 }
 
 export interface BucketItemWithMetadata extends BucketItem {
-    metadata: ItemBucketMetadata;
+    metadata: ItemBucketMetadata | ItemBucketMetadataList;
 }
 
 export interface BucketItemStat {
@@ -118,6 +118,15 @@ export interface PostPolicyResult {
     formData: {
         [key: string]: any;
     };
+}
+
+export interface MetadataItem {
+    Key: string;
+    Value: string;
+}
+
+export interface ItemBucketMetadataList {
+    Items: MetadataItem[];
 }
 
 export interface ItemBucketMetadata {
@@ -429,7 +438,7 @@ export class Client {
 
     // Other
     newPostPolicy(): PostPolicy;
-    setRequestOptions(options: AgentOptions): void;
+    setRequestOptions(options: RequestOptions): void;
 
     // Minio extensions that aren't necessary present for Amazon S3 compatible storage servers
     extensions: {
@@ -457,7 +466,10 @@ export class PostPolicy {
     setKeyStartsWith(prefix: string): void;
     setBucket(bucketName: string): void;
     setContentType(type: string): void;
+    setContentTypeStartsWith(prefix: string): void;
     setContentLengthRange(min: number, max: number): void;
+    setContentDisposition(disposition: string): void;
+    setUserMetaData(metadata: Record<string, string>): void;
 }
 
 export class NotificationPoller extends EventEmitter {
