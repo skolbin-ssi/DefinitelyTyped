@@ -55,6 +55,12 @@ const docker10 = new Docker({
     sshAuthAgent: '/tmp/ssh-abcde/agent.12345',
 });
 
+const docker11 = new Docker({
+    headers: {
+        Host: 'custom-host',
+    },
+});
+
 async function foo() {
     const containers = await docker7.listContainers();
     for (const container of containers) {
@@ -190,6 +196,37 @@ container.wait({
     abortSignal: abortController.signal,
 });
 
+// $ExpectType Promise<ReadWriteStream>
+container.attach({
+    detachKeys: '',
+    hijack: false,
+    logs: false,
+    stream: false,
+    stdin: false,
+    stdout: false,
+    stderr: false,
+});
+
+container.attach(
+    {
+        detachKeys: '',
+        hijack: false,
+        logs: false,
+        stream: false,
+        stdin: false,
+        stdout: false,
+        stderr: false,
+    },
+    (err, stream) => {
+        // $ExpectType ReadWriteStream
+        stream;
+    },
+);
+
+container.stop({
+    t: 0,
+});
+
 docker.listContainers((err, containers) => {
     containers.forEach(container => {
         docker.getContainer(container.Id).stop((err, data) => {
@@ -228,6 +265,10 @@ docker.buildImage(
         /* NOOP*/
     },
 );
+
+docker.buildImage('.', { nocache: true }, (err, response) => {
+    // NOOP
+});
 
 docker.createContainer({ Tty: true }, (err, container) => {
     container.start((err, data) => {

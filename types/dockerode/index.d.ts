@@ -67,9 +67,9 @@ declare namespace Dockerode {
         commit(callback: Callback<any>): void;
         commit(options?: {}): Promise<any>;
 
-        stop(options: {}, callback: Callback<any>): void;
+        stop(options: ContainerStopOptions, callback: Callback<any>): void;
         stop(callback: Callback<any>): void;
-        stop(options?: {}): Promise<any>;
+        stop(options?: ContainerStopOptions): Promise<any>;
 
         restart(options: {}, callback: Callback<any>): void;
         restart(callback: Callback<any>): void;
@@ -124,8 +124,8 @@ declare namespace Dockerode {
         stats(options?: { stream?: false; 'one-shot'?: boolean }): Promise<ContainerStats>;
         stats(options?: { stream: true }): Promise<NodeJS.ReadableStream>;
 
-        attach(options: {}, callback: Callback<NodeJS.ReadWriteStream>): void;
-        attach(options: {}): Promise<NodeJS.ReadWriteStream>;
+        attach(options: ContainerAttachOptions, callback: Callback<NodeJS.ReadWriteStream>): void;
+        attach(options: ContainerAttachOptions): Promise<NodeJS.ReadWriteStream>;
     }
 
     class Image {
@@ -836,7 +836,7 @@ declare namespace Dockerode {
         OomKillDisable?: boolean | undefined;
         Init?: boolean | undefined;
         PidsLimit?: number | undefined;
-        Ulimits?: any;
+        Ulimits?: Ulimit[] | undefined;
         CpuCount?: number | undefined;
         CpuPercent?: number | undefined;
         CpuRealtimePeriod?: number | undefined;
@@ -942,6 +942,7 @@ declare namespace Dockerode {
         platform?: string | undefined;
         target?: string | undefined;
         outputs?: string | undefined;
+        nocache?: boolean | undefined;
     }
 
     interface ImageDistributionOptions {
@@ -1145,7 +1146,7 @@ declare namespace Dockerode {
         Volumes?: { [volume: string]: {} } | undefined;
         WorkingDir?: string | undefined;
         NetworkDisabled?: boolean | undefined;
-        MacAddress?: boolean | undefined;
+        MacAddress?: string | undefined;
         ExposedPorts?: { [port: string]: {} } | undefined;
         StopSignal?: string | undefined;
         StopTimeout?: number | undefined;
@@ -1175,6 +1176,7 @@ declare namespace Dockerode {
         host?: string | undefined;
         port?: number | string | undefined;
         username?: string | undefined;
+        headers?: { [name: string]: string };
         ca?: string | string[] | Buffer | Buffer[] | undefined;
         cert?: string | string[] | Buffer | Buffer[] | undefined;
         key?: string | string[] | Buffer | Buffer[] | KeyObject[] | undefined;
@@ -1802,6 +1804,24 @@ declare namespace Dockerode {
         details?: boolean | undefined;
         tail?: number | undefined;
         timestamps?: boolean | undefined;
+        abortSignal?: AbortSignal;
+    }
+
+    interface ContainerAttachOptions {
+        detachKeys?: string | undefined;
+        hijack?: boolean | undefined;
+        logs?: boolean | undefined;
+        stream?: boolean | undefined;
+        stdin?: boolean | undefined;
+        stdout?: boolean | undefined;
+        stderr?: boolean | undefined;
+        abortSignal?: AbortSignal;
+    }
+
+    interface ContainerStopOptions {
+        signal?: string;
+        /** Number of seconds to wait before killing the container */
+        t?: number;
         abortSignal?: AbortSignal;
     }
 
