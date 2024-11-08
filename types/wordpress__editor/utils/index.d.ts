@@ -1,4 +1,13 @@
-export { uploadMedia as mediaUpload } from '@wordpress/media-utils';
+import { uploadMedia } from "@wordpress/media-utils";
+
+export type MediaUploadOptions =
+    & Omit<Parameters<typeof uploadMedia>[0], "maxUploadFileSize" | "onError" | "wpAllowedMimeTypes">
+    & Partial<Pick<Parameters<typeof uploadMedia>[0], "maxUploadFileSize">>
+    & {
+        onError?(message: string): void;
+    };
+
+export function mediaUpload(options: MediaUploadOptions): void;
 
 /**
  * Performs some basic cleanup of a string for use as a post slug

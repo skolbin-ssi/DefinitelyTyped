@@ -1,14 +1,3 @@
-// Type definitions for QUnit v2.19.0
-// Project: https://qunitjs.com/
-// Definitions by: James Bracy <https://github.com/waratuman>
-//                 Mike North <https://github.com/mike-north>
-//                 Stefan Sechelmann <https://github.com/sechel>
-//                 Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-//                 Timo Tijhof <https://github.com/Krinkle>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 declare global {
     interface Assert {
         /**
@@ -256,7 +245,13 @@ declare global {
          *
          * @param assertionResult The assertion result
          */
-        pushResult(assertResult: { result: boolean; actual: any; expected: any; message?: string | undefined; source?: string | undefined }): void;
+        pushResult(assertResult: {
+            result: boolean;
+            actual: any;
+            expected: any;
+            message?: string | undefined;
+            source?: string | undefined;
+        }): void;
 
         /**
          * Test if the provided promise rejects, and optionally compare the rejection value.
@@ -384,21 +379,21 @@ declare global {
         seed: string;
         testId: string[];
         testTimeout?: number | null;
-        urlConfig: {
+        urlConfig: Array<{
             id?: string | undefined;
             label?: string | undefined;
             tooltip?: string | undefined;
             value?: string | string[] | { [key: string]: string } | undefined;
-        }[];
+        }>;
     }
 
     interface GlobalHooks {
         /**
          * Runs after each test.
          */
-         afterEach(fn: (assert: Assert) => void | Promise<void>): void;
+        afterEach(fn: (assert: Assert) => void | Promise<void>): void;
 
-         /**
+        /**
          * Runs before each test.
          */
         beforeEach(fn: (assert: Assert) => void | Promise<void>): void;
@@ -461,7 +456,7 @@ declare global {
             /** Number of registered tests */
             totalTests: number;
             /** List of registered modules, */
-            modules: Array<{ name: string, moduleId: string }>
+            modules: Array<{ name: string; moduleId: string }>;
         }
         interface DoneDetails {
             failed: number;
@@ -564,6 +559,50 @@ declare global {
             assert: Assert;
         }
 
+        type TestFunctionCallback = (assert: Assert) => void | Promise<void>;
+
+        interface EachFunction {
+            <T>(
+                name: string,
+                dataset: T[] | { [key: string]: T },
+                callback: (assert: Assert, data: T) => void,
+            ): void;
+        }
+
+        interface IfFunction {
+            (name: string, condition: boolean, callback: TestFunctionCallback): void;
+            each: <T>(
+                name: string,
+                condition: boolean,
+                dataset: T[] | { [key: string]: T },
+                callback: (assert: Assert, data: T) => void,
+            ) => void;
+        }
+
+        interface OnlyFunction {
+            (name: string, callback: TestFunctionCallback): void;
+            each: EachFunction;
+        }
+
+        interface TodoFunction {
+            (name: string, callback?: TestFunctionCallback): void;
+            each: EachFunction;
+        }
+
+        interface SkipFunction {
+            (name: string, callback?: TestFunctionCallback): void;
+            each: EachFunction;
+        }
+
+        interface TestFunction {
+            (name: string, callback: TestFunctionCallback): void;
+            each: EachFunction;
+            if: IfFunction;
+            only: OnlyFunction;
+            skip: SkipFunction;
+            todo: TodoFunction;
+        }
+
         type Test = AssertionTest | SkipTest | TodoTest;
     }
 
@@ -649,7 +688,7 @@ declare global {
          *
          * For more details about hooks, refer to QUnit.module § Hooks.
          */
-        hooks: GlobalHooks
+        hooks: GlobalHooks;
 
         /**
          * Register a callback to fire whenever an assertion completes.
@@ -732,7 +771,7 @@ declare global {
          * @param {string} name Title of unit being tested
          * @param callback Function to close over assertions
          */
-        only(name: string, callback: (assert: Assert) => void | Promise<void>): void;
+        only(name: string, callback: QUnit.TestFunctionCallback): void;
 
         /**
          * Handle a global error that should result in a failed test run.
@@ -771,7 +810,7 @@ declare global {
          *
          * @param {string} Title of unit being tested
          */
-        skip(name: string, callback?: (assert: Assert) => void | Promise<void>): void;
+        skip(name: string, callback?: QUnit.TestFunctionCallback): void;
 
         /**
          * Returns a single line string representing the stacktrace (call stack).
@@ -817,7 +856,7 @@ declare global {
          * @param {string} Title of unit being tested
          * @param callback Function to close over assertions
          */
-        test(name: string, callback: (assert: Assert) => void | Promise<void>): void;
+        test: QUnit.TestFunction;
 
         /**
          * Register a callback to fire whenever a test ends.
@@ -855,7 +894,7 @@ declare global {
          * @param {string} Title of unit being tested
          * @param callback Function to close over assertions
          */
-        todo(name: string, callback?: (assert: Assert) => void | Promise<void>): void;
+        todo(name: string, callback?: QUnit.TestFunctionCallback): void;
 
         /**
          * Compares two values. Returns true if they are equivalent.

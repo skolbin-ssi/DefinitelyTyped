@@ -1,7 +1,9 @@
 {
     "rules": {
-        "dt-header": "off",
-        "no-declare-current-package": "off",
-        "no-self-import": "off"
+        "@definitelytyped/no-declare-current-package": "off",
+        "@definitelytyped/no-self-import": "off",
+        "@definitelytyped/strict-export-declare-modifiers": "off",
+        "@typescript-eslint/no-unsafe-function-type": "off",
+        "@typescript-eslint/no-wrapper-object-types": "off"
     }
 }

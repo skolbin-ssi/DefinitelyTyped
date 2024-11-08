@@ -1,13 +1,9 @@
+//////////////////////////////////////////////////////
+// BEWARE: DO NOT EDIT MANUALLY! Changes will be lost!
+//////////////////////////////////////////////////////
+
 /**
  * Namespace: browser.i18n
- * Generated from Mozilla sources. Do not manually edit!
- *
- * Use the <code>browser.i18n</code> infrastructure to implement internationalization across your whole app or extension.
- *
- * Comments found in source JSON schema files:
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
  */
 export namespace I18n {
     /**
